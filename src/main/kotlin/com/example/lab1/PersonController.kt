@@ -38,25 +38,37 @@ class PersonController(private val personRepository: PersonRepository) {
             ResponseEntity(HttpStatus.NOT_FOUND)
         }
     }
-
     @PatchMapping("/{id}")
-    fun updatePerson(@PathVariable id: Long, @RequestBody updatedPerson: Person): ResponseEntity<Person> {
-        var existingPerson = personRepository.findById(id)
+    fun updatePerson(@PathVariable id: Long, @RequestBody updatedPerson: Map<String, Any>): ResponseEntity<Person> {
+        val existingPerson = personRepository.findById(id)
 
         return if (existingPerson.isPresent) {
             var person = existingPerson.get()
 
-            person.name = updatedPerson.name.takeIf { it.isNotEmpty() } ?: person.name
-            person.address = updatedPerson.address.takeIf { it.isNotEmpty() } ?: person.address
-            person.age = updatedPerson.age.takeIf { it > 0 } ?: person.age
-            person.work = updatedPerson.work.takeIf { it.isNotEmpty() } ?: person.work
+            // Güncellenmek istenen alanlar JSON içinde kontrol edilerek güncellenir
+            updatedPerson["name"]?.let {
+                person = person.copy(name = it as String)
+            }
 
-            var updated = personRepository.save(person)
+            updatedPerson["age"]?.let {
+                person = person.copy(age = (it as Int).takeIf { it > 0 } ?: person.age)
+            }
+
+            updatedPerson["address"]?.let {
+                person = person.copy(address = it as String)
+            }
+
+            updatedPerson["work"]?.let {
+                person = person.copy(work = it as String)
+            }
+
+            val updated = personRepository.save(person)
             ResponseEntity.ok(updated)
         } else {
             ResponseEntity.notFound().build()
         }
     }
+
 
     @DeleteMapping("/{id}")
     fun deletePerson(@PathVariable id: Long): ResponseEntity<Unit> {
