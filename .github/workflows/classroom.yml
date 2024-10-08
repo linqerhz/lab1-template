@@ -15,11 +15,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Uygulamayı derle ve test et
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
       - name: Build and Test
         run: ./gradlew build
 
-      # Uygulamayı Heroku'ya dağıt
       - name: Deploy to Heroku
         run: |
           docker login --username=_ --password=$HEROKU_API_KEY registry.heroku.com
@@ -27,7 +28,6 @@ jobs:
           docker push registry.heroku.com/<lab1-template>/web
           heroku container:release web --app <lab1-template>
 
-      # Postman API Testlerini Çalıştır
       - name: Run API Tests
         uses: matt-ball/newman-action@master
         with:
@@ -39,3 +39,13 @@ jobs:
       - name: Autograding
         uses: education/autograding@v1
         continue-on-error: true
+
+      - name: Github auto grader mark
+        uses: Romanow/google-sheet-autograder-marker@v1.0
+        with:
+          google_token: ${{secrets.GOOGLE_API_KEY}}
+          sheet_id: "1xkgjUX6Qmk7rdJG-QPOToav-HWWtthJjnShIKnw3oIY"
+          homework_number: 1
+          user_column: 'D'
+          column_offset: 'F'
+          mark: "'+"
