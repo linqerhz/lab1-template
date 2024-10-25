@@ -217,9 +217,6 @@ build-iPhoneSimulator/
 # Ignore Gradle GUI config
 gradle-app.setting
 
-gradle/
-!gradle/wrapper/gradle-wrapper.jar
-
 
 # Cache of project
 .gradletasknamecache
