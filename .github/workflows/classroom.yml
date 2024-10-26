@@ -6,12 +6,14 @@ on:
   pull_request:
     branches:
       - master
+
 jobs:
   build:
     name: Autograding
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -32,16 +34,13 @@ jobs:
 
       - name: Docker login to Heroku
         env:
-            HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-            run: echo $HEROKU_API_KEY | docker login --username=_ --password-stdin registry.heroku.com
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: echo $HEROKU_API_KEY | docker login --username=_ --password-stdin registry.heroku.com
 
       - name: Build and push Docker image
         run: |
-                docker build -t registry.heroku.com/lab1-template/web .
-                docker push registry.heroku.com/lab1-template/web
-                
-                
-                
+          docker build -t registry.heroku.com/lab1-template/web .
+          docker push registry.heroku.com/lab1-template/web
 
       - name: Release to Heroku
         run: heroku container:release web --app lab1-template
@@ -49,20 +48,21 @@ jobs:
       - name: Run API Tests
         uses: matt-ball/newman-action@master
         with:
-                collection: postman/[inst] Lab1.postman_collection.json
-                environment: postman/[inst][heroku] Lab1.postman_environment.json
-                delayRequest: 100
-                reporters: '[ "cli" ]'
+          collection: postman/[inst] Lab1.postman_collection.json
+          environment: postman/[inst][heroku] Lab1.postman_environment.json
+          delayRequest: 100
+          reporters: '[ "cli" ]'
 
       - name: Autograding
         uses: education/autograding@v1
         continue-on-error: true
+
       - name: Github auto grader mark
         uses: Romanow/google-sheet-autograder-marker@v1.0
         with:
-            google_token: ${{ secrets.GOOGLE_API_KEY }}
-            sheet_id: "1xkgjUX6Qmk7rdJG-QPOToav-HWWtthJjnShIKnw3oIY"
-            homework_number: 1
-            user_column: 'D'
-            column_offset: 'F'
-            mark: "'+"
+          google_token: ${{ secrets.GOOGLE_API_KEY }}
+          sheet_id: "1xkgjUX6Qmk7rdJG-QPOToav-HWWtthJjnShIKnw3oIY"
+          homework_number: 1
+          user_column: 'D'
+          column_offset: 'F'
+          mark: "'+"
